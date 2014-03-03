@@ -11,6 +11,7 @@ class ftpException: public std::exception
 		static const int HOSTNAME = 4;
 		static const int CONNECT = 5;
 		static const int NOT_FOUND = 6;
+		static const int RESPONCE = 7;
 
 		ftpException(int code)
 		{
@@ -27,6 +28,7 @@ class ftpException: public std::exception
 				"Nepodařilo se vytvořit socket",
 				"Chyba hostname",
 				"Chyba připojení",
+				"Neočekáváná odpověď serveru"
 			};
 
 			std::cout << messages[code] << std::endl; //myException::messages[myException::code]

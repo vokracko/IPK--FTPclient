@@ -1,7 +1,7 @@
 #include <iostream>
 #include "ftpClient.h"
 
-
+//TODO regulár  user + password
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -21,27 +21,27 @@ int main(int argc, char* argv[])
 
 		client.parseInput(argv[1]);
 		client.establishConnection(false);
-		client.getResponce(false);
+		client.getResponce(220, false);
 
 		cmd << "USER " << client.connection.username << endl;
 		client << cmd;
-		client.getResponce(false);
+		client.getResponce(331, false);
 
 		cmd << "PASS " << client.connection.password << endl;
 		client << cmd;
-		client.getResponce(false);
+		client.getResponce(230, false);
 
 		client.passive();
 
 		cmd << "CWD " << client.connection.path << endl;
 		client << cmd;
-		client.getResponce(false);
+		client.getResponce(250, false);
 
 		cmd << "NLST" << endl;
 		client << cmd;
-		client.getResponce(false);
-		client.getResponce(true);
-		client.getResponce(false);
+		client.getResponce(150, false);
+		// client.getResponce(0, true);
+		client.getResponce(226, false);
 
 		cmd << "QUIT" << endl;
 		client << cmd;

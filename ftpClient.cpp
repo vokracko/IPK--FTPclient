@@ -48,10 +48,7 @@ void ftpClient::parseInput(const char * input)
 
 	if(parts[PORT].rm_so != -1)
 	{
-		std::string tmp;
-		tmp.assign(input, parts[PORT].rm_so, parts[PORT].rm_eo - parts[PORT].rm_so);
-		std::stringstream ss(tmp);
-		ss >> connection.port;
+		connection.port = atoi(input + parts[PORT].rm_so);
 	}
 	else
 	{
@@ -95,7 +92,7 @@ void ftpClient::establishConnection(bool passive)
 	}
 }
 
-std::string * ftpClient::getResponce(bool passive)
+std::string * ftpClient::getResponce(int exceptedCode, bool passive)
 {
 	//TODO konec zprávy: kód následuje mezerou
 	static char reply[replyLength+1] = {0};
@@ -112,6 +109,12 @@ std::string * ftpClient::getResponce(bool passive)
 		memset(reply, 0, replyLength);
 	}
 	while(!isLast() && res > 0);
+
+	if(!passive && atoi(responces.top()->c_str()) != exceptedCode)
+	{
+		throw ftpException(ftpException::RESPONCE);
+		std::cerr << responces.top()->c_str() << std::endl;
+	}
 
 	std::cout << responces.top()->c_str() << std::endl;
 
@@ -191,7 +194,6 @@ void ftpClient::send(std::stringstream & command)
 {
 	//TODO ověřovat res?
 	int res;
-	std::cout << command.str();
 	res = ::send(controlSocket, command.str().c_str(), command.str().size(), 0);
 	command.str("");
 }
@@ -200,7 +202,7 @@ bool ftpClient::passive()
 {
 	std::stringstream cmd("PASV\r\n");
 	ftpClient::send(cmd);
-	getResponce(false);
+	getResponce(227, false);
 	passiveAddress();
 	establishConnection(true);
 
