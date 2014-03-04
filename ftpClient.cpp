@@ -5,6 +5,7 @@ ftpClient::ftpClient()
 	connection.username = "anonymous";
 	connection.password = "anonymous@host.com";
 	connection.path = "./";
+	connection.port = 21;
 }
 
 ftpClient::~ftpClient()
@@ -27,9 +28,7 @@ void ftpClient::parseInput(const char * input)
 	regex_t regex;
 	regmatch_t parts[PATH+1]; //PATH je poslední položka ve struktuře
 
-	//TODO do regexu doplnit username:password@
-
-	compRes = regcomp(&regex, "^(ftp://)?([a-zA-Z0-9.-]+)(:([0-9]+))?(/[a-zA-Z0-9_\\.-]+)*[/]?$", REG_EXTENDED);
+	compRes = regcomp(&regex, "^(ftp://(([^:@]+):([^@]+)@)?)?([a-zA-Z0-9.-]+)(:([0-9]+))?(/.*)?$", REG_EXTENDED);
 
 	if(compRes != 0)
 	{
@@ -44,20 +43,57 @@ void ftpClient::parseInput(const char * input)
 		throw ftpException(ftpException::REGEX_MATCH);
 	}
 
+	if(parts[USERNAME].rm_so != -1)
+	{
+		connection.username.assign(input, parts[USERNAME].rm_so, parts[USERNAME].rm_eo - parts[USERNAME].rm_so);
+		percentEncoding(connection.username);
+	}
+
+	if(parts[PASSWORD].rm_so != -1)
+	{
+		connection.password.assign(input, parts[PASSWORD].rm_so, parts[PASSWORD].rm_eo - parts[PASSWORD].rm_so);
+		percentEncoding(connection.password);
+	}
+
 	connection.host.assign(input, parts[HOST].rm_so, parts[HOST].rm_eo - parts[HOST].rm_so);
 
 	if(parts[PORT].rm_so != -1)
 	{
 		connection.port = atoi(input + parts[PORT].rm_so);
 	}
-	else
-	{
-		connection.port = 21;
-	}
 
 	if(parts[PATH].rm_so != -1)
 	{
 		connection.path.assign(input, parts[PATH].rm_so, parts[PATH].rm_eo - parts[PATH].rm_so);
+	}
+
+	std::cout << connection.username << std::endl;
+	std::cout << connection.password << std::endl;
+
+	regfree(&regex);
+}
+
+void ftpClient::percentEncoding(std::string & str)
+{
+	const int matchSize = str.length() / 3;
+	bool compRes;
+	bool match;
+	char buff[3] = {0, 0, '\0'};
+	regex_t regex;
+	regmatch_t parts[matchSize];
+
+	compRes = regcomp(&regex, "(\\%[0-9A-F]{1}[0-9A-F]{1})", REG_EXTENDED);
+
+	if(compRes != 0)
+	{
+		throw ftpException(ftpException::REGEX_COMPILATION);
+	}
+
+	while(regexec(&regex, str.c_str(), matchSize, parts, 0) == 0)
+	{
+		memcpy(buff, str.c_str() + parts[1].rm_so + 1, 2);
+		int number = strtol(buff, NULL, 16);
+		str.replace(parts[1].rm_so, 3, (char*) &number, 0, 1);
 	}
 
 	regfree(&regex);
@@ -90,6 +126,7 @@ void ftpClient::establishConnection(bool passive)
 	{
 		controlSocket = sck;
 	}
+
 }
 
 std::string * ftpClient::getResponce(int exceptedCode, bool passive)
@@ -116,7 +153,7 @@ std::string * ftpClient::getResponce(int exceptedCode, bool passive)
 		std::cerr << responces.top()->c_str() << std::endl;
 	}
 
-	std::cout << responces.top()->c_str() << std::endl;
+	// std::cout << responces.top()->c_str() << std::endl;
 
 	return responces.top();
 }
@@ -126,6 +163,7 @@ void ftpClient::pushResponce(const char * message)
 	static bool messageEnded = true;
 	std::string * tmp;
 	int crlfPos;
+
 
 	if(!messageEnded)
 	{
@@ -149,8 +187,8 @@ void ftpClient::pushResponce(const char * message)
 		tmp = new std::string(message, crlfPos);
 		responces.push(tmp);
 		messageEnded = true;
-		message += crlfPos + 1;
-		// std::cout << "start: " << start << std::endl;
+		// std::cout << crlfPos << std::endl;
+		message += crlfPos + 2;
 	}
 
 	//více zpráv na řádku, poslední neukončená
@@ -163,10 +201,10 @@ void ftpClient::pushResponce(const char * message)
 
 }
 
-// bool ftpClient::startWithCode(const char * message)
-// {
-// 	return isdigit(reply[0]) && isdigit(reply[1]) && isdigit(reply[2]);
-// }
+std::string * ftpClient::lastResponce()
+{
+	return responces.size() ? responces.top() : NULL;
+}
 
 int ftpClient::crlf(const char * message)
 {

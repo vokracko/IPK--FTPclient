@@ -19,14 +19,6 @@ struct Tconnection
 	unsigned int port;
 };
 
-enum connectionIndexes
-{
-	HOST = 2,
-	PORT = 4,
-	PATH = 5,
-};
-
-
 class ftpClient
 {
 		static const int replyLength = 99;
@@ -35,12 +27,14 @@ class ftpClient
 		int controlSocket;
 		int passiveSocket;
 
-		// static enum class indexes
-		// {
-		// 	HOST = 2,
-		// 	PORT = 4,
-		// 	PATH = 5,
-		// };
+		enum
+		{
+			USERNAME = 3,
+			PASSWORD = 4,
+			HOST = 5,
+			PORT = 7,
+			PATH = 8,
+		};
 
 	public:
 		Tconnection connection;
@@ -51,6 +45,7 @@ class ftpClient
 		void establishConnection(bool passive);
 		void parseInput(const char * input);
 		void passiveAddress();
+		void percentEncoding(std::string & str);
 		void pushResponce(const char * message);
 		void operator << (std::stringstream & command);
 
@@ -62,5 +57,6 @@ class ftpClient
 		int commas(char * str, int n);
 
 		std::string * getResponce(int exceptedCode, bool passive);
+		std::string * lastResponce();
 		std::string & getUsername();
 };

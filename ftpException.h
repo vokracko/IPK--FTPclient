@@ -18,7 +18,7 @@ class ftpException: public std::exception
 			ftpException::code = code;
 		}
 
-		void printMessage()
+		std::string getMessage()
 		{
 			std::string messages[] =
 			{
@@ -28,10 +28,11 @@ class ftpException: public std::exception
 				"Nepodařilo se vytvořit socket",
 				"Chyba hostname",
 				"Chyba připojení",
-				"Neočekáváná odpověď serveru"
+				"Chybná odpověď serveru",
+				"Neočekávaná odpověď serveru",
 			};
 
-			std::cout << messages[code] << std::endl; //myException::messages[myException::code]
+			return messages[code];
 		}
 
 		int getCode()

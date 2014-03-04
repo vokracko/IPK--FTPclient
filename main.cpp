@@ -12,13 +12,12 @@ int main(int argc, char* argv[])
 
 	if(argc != 2)
 	{
-		cerr << "Musí být zadaný parametr" << endl;
+		cerr << "Musí být zadán právě jeden parametr" << endl;
 		return -1;
 	}
 
 	try
 	{
-
 		client.parseInput(argv[1]);
 		client.establishConnection(false);
 		client.getResponce(220, false);
@@ -39,8 +38,9 @@ int main(int argc, char* argv[])
 
 		cmd << "NLST" << endl;
 		client << cmd;
+
 		client.getResponce(150, false);
-		// client.getResponce(0, true);
+		client.getResponce(0, true);
 		client.getResponce(226, false);
 
 		cmd << "QUIT" << endl;
@@ -48,7 +48,8 @@ int main(int argc, char* argv[])
 	}
 	catch(ftpException & e)
 	{
-		e.printMessage();
+		if(client.lastResponce()) cerr << client.lastResponce()->c_str() << endl;
+		cerr << e.getMessage() << endl;
 		return e.getCode();
 	}
 
