@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
 
 		client.getResponce(150);
 		client.getResponce(0, 0, true);
-		std::cout << "konec pasivu" << std::endl;
 		client.getResponce(226);
 
 		cmd << "QUIT" << endl;
