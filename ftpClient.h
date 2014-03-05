@@ -56,7 +56,7 @@ class ftpClient
 		int crlf(const char * message);
 		int commas(char * str, int n);
 
-		std::string * getResponce(int exceptedCode, bool passive);
+		std::string * getResponce(int exceptedCode1, int exceptedCode2 = 0, bool passive = false);
 		std::string * lastResponce();
 		std::string & getUsername();
 };

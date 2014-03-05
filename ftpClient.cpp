@@ -16,7 +16,6 @@ ftpClient::~ftpClient()
 		responces.pop();
 	}
 
-	close(passiveSocket);
 	close(controlSocket);
 }
 
@@ -66,9 +65,6 @@ void ftpClient::parseInput(const char * input)
 	{
 		connection.path.assign(input, parts[PATH].rm_so, parts[PATH].rm_eo - parts[PATH].rm_so);
 	}
-
-	std::cout << connection.username << std::endl;
-	std::cout << connection.password << std::endl;
 
 	regfree(&regex);
 }
@@ -129,9 +125,8 @@ void ftpClient::establishConnection(bool passive)
 
 }
 
-std::string * ftpClient::getResponce(int exceptedCode, bool passive)
+std::string * ftpClient::getResponce(int exceptedCode1, int exceptedCode2, bool passive)
 {
-	//TODO konec zprávy: kód následuje mezerou
 	static char reply[replyLength+1] = {0};
 	int socket = passive ? passiveSocket : controlSocket;
 	int res;
@@ -144,16 +139,19 @@ std::string * ftpClient::getResponce(int exceptedCode, bool passive)
 
 		pushResponce(reply);
 		memset(reply, 0, replyLength);
+		std::cout << replyLength << " " << res << std::endl;
 	}
-	while(!isLast() && res > 0);
+	while((!passive && !isLast()) || (passive && replyLength == res));
 
-	if(!passive && atoi(responces.top()->c_str()) != exceptedCode)
+	int code = atoi(responces.top()->c_str());
+
+	if(passive) close(passiveSocket);
+
+	if(!passive && (exceptedCode1 != code && exceptedCode2 != code))
 	{
 		throw ftpException(ftpException::RESPONCE);
 		std::cerr << responces.top()->c_str() << std::endl;
 	}
-
-	// std::cout << responces.top()->c_str() << std::endl;
 
 	return responces.top();
 }
@@ -184,11 +182,11 @@ void ftpClient::pushResponce(const char * message)
 
 	while((crlfPos = crlf(message)) != -1)
 	{
+		std::cout << "cyklím" << std::endl;
 		tmp = new std::string(message, crlfPos);
 		responces.push(tmp);
 		messageEnded = true;
-		// std::cout << crlfPos << std::endl;
-		message += crlfPos + 2;
+		message += crlfPos + 1;
 	}
 
 	//více zpráv na řádku, poslední neukončená
@@ -220,7 +218,7 @@ bool ftpClient::isLast()
 {
 	const char * top = responces.top()->c_str();
 
-	return top[3] == ' ' && (top[strlen(top)-1] == '\n' || top[strlen(top)-1] == '\r');
+	return isdigit(top[0]) && isdigit(top[1]) && isdigit(top[2]) && top[3] == ' ' && (top[strlen(top)-1] == '\n' || top[strlen(top)-1] == '\r');
 }
 
 void ftpClient::operator << (std::stringstream & command)
@@ -230,9 +228,8 @@ void ftpClient::operator << (std::stringstream & command)
 
 void ftpClient::send(std::stringstream & command)
 {
-	//TODO ověřovat res?
-	int res;
-	res = ::send(controlSocket, command.str().c_str(), command.str().size(), 0);
+
+	::send(controlSocket, command.str().c_str(), command.str().size(), 0);
 	command.str("");
 }
 
