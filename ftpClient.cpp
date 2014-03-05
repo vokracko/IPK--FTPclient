@@ -3,7 +3,7 @@
 ftpClient::ftpClient()
 {
 	connection.username = "anonymous";
-	connection.password = "anonymous@host.com";
+	connection.password = "anonymous";
 	connection.path = "./";
 	connection.port = 21;
 }
@@ -139,14 +139,11 @@ std::string * ftpClient::getResponce(int exceptedCode1, int exceptedCode2, bool 
 
 		pushResponce(reply);
 		memset(reply, 0, replyLength);
-		std::cout << replyLength << " " << res << std::endl;
 	}
 	while((!passive && !isLast()) || (passive && replyLength == res));
 
 	int code = atoi(responces.top()->c_str());
-
 	if(passive) close(passiveSocket);
-
 	if(!passive && (exceptedCode1 != code && exceptedCode2 != code))
 	{
 		throw ftpException(ftpException::RESPONCE);
@@ -182,7 +179,6 @@ void ftpClient::pushResponce(char * message)
 
 	while((crlfPos = crlf(message)) != -1)
 	{
-		std::cout << "cyklím" << std::endl;
 		tmp = new std::string(message, crlfPos);
 		responces.push(tmp);
 		messageEnded = true;
@@ -240,7 +236,6 @@ bool ftpClient::passive()
 
 	return true;
 }
-
 
 void ftpClient::passiveAddress()
 {
