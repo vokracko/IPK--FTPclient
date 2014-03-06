@@ -46,14 +46,14 @@ class ftpClient
 		void parseInput(const char * input);
 		void passiveAddress();
 		void percentEncoding(std::string & str);
-		void pushResponce(const char * message);
+		void pushResponce(char * message);
 		void operator << (std::stringstream & command);
 
 		bool isLast();
 		void send(std::stringstream & command);
 		bool passive();
 
-		int crlf(const char * message);
+		int crlf(char * message);
 		int commas(char * str, int n);
 
 		std::string * getResponce(int exceptedCode1, int exceptedCode2 = 0, bool passive = false);

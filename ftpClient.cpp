@@ -3,7 +3,7 @@
 ftpClient::ftpClient()
 {
 	connection.username = "anonymous";
-	connection.password = "anonymous@host.com";
+	connection.password = "anonymous";
 	connection.path = "./";
 	connection.port = 21;
 }
@@ -142,9 +142,7 @@ std::string * ftpClient::getResponce(int exceptedCode1, int exceptedCode2, bool 
 	while((!passive && !isLast()) || (passive && res != 0));
 
 	int code = atoi(responces.top()->c_str());
-
 	if(passive) close(passiveSocket);
-
 	if(!passive && (exceptedCode1 != code && exceptedCode2 != code))
 	{
 		throw ftpException(ftpException::RESPONCE);
@@ -154,7 +152,7 @@ std::string * ftpClient::getResponce(int exceptedCode1, int exceptedCode2, bool 
 	return responces.top();
 }
 
-void ftpClient::pushResponce(const char * message)
+void ftpClient::pushResponce(char * message)
 {
 	static bool messageEnded = true;
 	std::string * tmp;
@@ -201,14 +199,11 @@ std::string * ftpClient::lastResponce()
 	return responces.size() ? responces.top() : NULL;
 }
 
-int ftpClient::crlf(const char * message)
+int ftpClient::crlf(char * message)
 {
-	int index = 0;
-	int length = strlen(message);
+	char * index = strstr(message, "\r\n");
 
-	while(index < length && message[index] != '\r' && message[index+1] != '\n') ++index;
-
-	return index == length ? -1 : index+1;
+	return index ? (int) (index - message) + 1: -1;
 }
 
 bool ftpClient::isLast()
@@ -240,7 +235,6 @@ bool ftpClient::passive()
 
 	return true;
 }
-
 
 void ftpClient::passiveAddress()
 {
