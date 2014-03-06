@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
 		cmd << "USER " << client.connection.username << endl;
 		client << cmd;
-		client.getResponce(331, 230); //TODO může poslat 230
+		client.getResponce(331, 230);
 
 		cmd << "PASS " << client.connection.password << endl;
 		client << cmd;
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
 
 		client.getResponce(150);
 		client.getResponce(0, 0, true);
-		std::cout << "konec pasivu" << std::endl;
 		client.getResponce(226);
 
 		cmd << "QUIT" << endl;

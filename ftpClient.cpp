@@ -136,12 +136,10 @@ std::string * ftpClient::getResponce(int exceptedCode1, int exceptedCode2, bool 
 		res = recv(socket, reply, replyLength, 0);
 
 		if(passive) std::cout << reply;
-
-		pushResponce(reply);
+		else pushResponce(reply);
 		memset(reply, 0, replyLength);
-		std::cout << replyLength << " " << res << std::endl;
 	}
-	while((!passive && !isLast()) || (passive && replyLength == res));
+	while((!passive && !isLast()) || (passive && res != 0));
 
 	int code = atoi(responces.top()->c_str());
 
@@ -182,7 +180,6 @@ void ftpClient::pushResponce(const char * message)
 
 	while((crlfPos = crlf(message)) != -1)
 	{
-		std::cout << "cyklím" << std::endl;
 		tmp = new std::string(message, crlfPos);
 		responces.push(tmp);
 		messageEnded = true;
