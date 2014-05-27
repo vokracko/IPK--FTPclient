@@ -22,21 +22,21 @@ int main(int argc, char* argv[])
 		client.establishConnection(false);
 		client.getResponce(220);
 
-		cmd << "USER " << client.connection.username << endl;
+		cmd << "USER " << client.connection.username << "\r\n";
 		client << cmd;
 		client.getResponce(331, 230);
 
-		cmd << "PASS " << client.connection.password << endl;
+		cmd << "PASS " << client.connection.password << "\r\n";
 		client << cmd;
 		client.getResponce(230);
 
 		client.passive();
 
-		cmd << "CWD " << client.connection.path << endl;
+		cmd << "CWD " << client.connection.path << "\r\n";
 		client << cmd;
 		client.getResponce(250);
 
-		cmd << "LIST" << endl;
+		cmd << "LIST" << "\r\n";
 		client << cmd;
 
 		client.getResponce(150);

@@ -209,7 +209,6 @@ int ftpClient::crlf(char * message)
 bool ftpClient::isLast()
 {
 	const char * top = responces.top()->c_str();
-
 	return isdigit(top[0]) && isdigit(top[1]) && isdigit(top[2]) && top[3] == ' ' && (top[strlen(top)-1] == '\n' || top[strlen(top)-1] == '\r');
 }
 
@@ -220,7 +219,6 @@ void ftpClient::operator << (std::stringstream & command)
 
 void ftpClient::send(std::stringstream & command)
 {
-
 	::send(controlSocket, command.str().c_str(), command.str().size(), 0);
 	command.str("");
 }
